@@ -16,5 +16,8 @@ public:
     bool operator!=(const Vertex &other);
     friend std::ostream& operator<<(std::ostream& out, Vertex& e);
 private:
+    //unique ID
     unsigned int id;
+    //evaluation value for upcoming algorithms
+    int value;
 };

@@ -106,7 +106,12 @@ unsigned int factorial(unsigned int n)
 
 unsigned int maxEdgeCount(int v_count)
 {
-    return factorial(v_count) / (2 * factorial(v_count - 2));
+    // return factorial(v_count) / (2 * factorial(v_count - 2));
+    int sum(0);
+    for (int i = 0; i < v_count; i++)
+        sum += i;
+    return sum;
+    // return ((v_count + 1) * v_count) / 2 - v_count;
 }
 
 void printEdges(Graph& graph)
@@ -134,7 +139,6 @@ Graph circleGraph(int v_count)
     for (int i = 1; i <= v_count; i++) {
         edges.push_back(std::make_pair(i, (((i + 1) % v_count == 0) ? (i + 1) : (i + 1) % v_count)));
     }
-    // cout << "what2" << endl;
     return Graph(v_count, edges);
 }
 
@@ -264,12 +268,12 @@ int main(int argc, char** argv)
         edge12,
     };
 
-    pair<int,int> edge_1(1, 2);
-    pair<int,int> edge_2(1, 5);
-    pair<int,int> edge_3(2, 4);
-    pair<int,int> edge_4(4, 5);
-    pair<int,int> edge_5(5, 3);
-    pair<int,int> edge_6(3, 4);
+    pair<int, int> edge_1(1, 2);
+    pair<int, int> edge_2(1, 5);
+    pair<int, int> edge_3(2, 4);
+    pair<int, int> edge_4(4, 5);
+    pair<int, int> edge_5(5, 3);
+    pair<int, int> edge_6(3, 4);
     auto edges2 = {
         edge_1,
         edge_2,
@@ -279,20 +283,37 @@ int main(int argc, char** argv)
         edge_6
     };
 
+    std::vector<std::vector<bool>> adj_matrix = {
+        { 0, 1, 1, 1 },
+        { 1, 0, 1, 1 },
+        { 1, 1, 0, 1 },
+        { 1, 1, 1, 0 }
+    };
+
     Graph example(5, edges2);
-    Graph complete = completeGraph(6);
+    Graph complete = completeGraph(4);
     Graph circle = circleGraph(1000);
     Graph tree(13, edges);
     Graph star = starGraph(6);
     Graph path = pathGraph(7);
+    Graph g(adj_matrix);
 
     // WeightedGraph weight(completeGraph(6),3);
 
-    for (auto it : complete.getEdges())
-        cout << it << endl;
+    // for (auto it : complete.getEdges())
+    //     cout << it << endl;
 
-    for (auto it : depth_first_search(complete, 1))
+    // for (auto it : breadth_first_search(complete, 1))
+    //     std::cout << it << ',';
+
+    // cout << '\n';
+
+    for (auto it : breadth_first_search(g, 1))
         std::cout << it << ',';
+
+
+    //test[row][column]
+    // cout << maxEdgeCount(5) << endl;
 
     return 0;
 }

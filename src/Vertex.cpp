@@ -5,6 +5,7 @@ Vertex::Vertex() {}
 Vertex::Vertex(unsigned int id)
 {
     this->id = id;
+    this->value = 0;
 }
 
 Vertex::~Vertex()

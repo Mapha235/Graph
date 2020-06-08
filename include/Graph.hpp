@@ -16,6 +16,7 @@ public:
     @param e vector of edges.*/
     Graph(int v_count, std::vector<std::pair<int, int>> e);
     Graph(int v_count, std::vector<Edge> e);
+    Graph(std::vector<std::vector<bool>> adj);
     virtual ~Graph();
     /*Removes duplicate vertices and edges.*/
     virtual void removeDup();
@@ -42,6 +43,10 @@ public:
     Graph& operator=(const Graph& other);
 
 protected:
+    /*  In most cases I want to work with edges, 
+        which is why I save the adjacent matrix 
+        that provides O(1) complexitity on edge-operations.*/
+    std::vector<std::vector<bool>> adj_matrix;
     std::vector<Vertex> vertices;
     std::vector<Edge> edges;
 };

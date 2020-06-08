@@ -44,6 +44,23 @@ Graph::Graph(int v_count, std::vector<Edge> e)
     std::sort(edges.begin(), edges.end(), sortByDst);
 }
 
+Graph::Graph(std::vector<std::vector<bool>> adj)
+{
+    if (adj.size() > 0 && adj.size() == adj[0].size()) {
+        adj_matrix = adj;
+        /*The following loop only reads the lower triangle of the matrix.
+         i loops through the rows, j loops through the columns.*/
+        for (int i = 0; i < adj.size(); ++i) {
+            vertices.push_back(Vertex(i + 1));
+            for (int j = i; j < adj.at(i).size(); ++j) {
+                if (adj.at(i).at(j) == 1)
+                    edges.push_back(Edge(i + 1, j + 1));
+            }
+        }
+    }
+    std::sort(edges.begin(), edges.end(), sortByDst);
+}
+
 Graph::~Graph()
 {
 }
@@ -53,19 +70,35 @@ void Graph::removeDup()
     vertices.erase(std::unique(vertices.begin(), vertices.end()), vertices.end());
 }
 
+// std::vector<Vertex> Graph::getNeighbors(int id)
+// {
+//     try {
+//         getVertex(id);
+//         std::vector<Vertex> neighbors;
+//         for (auto it : edges) {
+//             if (it.getSrc().getID() == id) {
+//                 neighbors.push_back(it.getDst());
+//             } else if (it.getDst().getID() == id) {
+//                 neighbors.push_back(it.getSrc());
+//             }
+//         }
+//         std::sort(neighbors.begin(), neighbors.end(), sortByLabelDes);
+//         return neighbors;
+//     } catch (const std::exception& e) {
+//         std::cerr << e.what() << '\n';
+//     }
+// }
+
 std::vector<Vertex> Graph::getNeighbors(int id)
 {
+    // adj_matrix is already sorted
     try {
         getVertex(id);
         std::vector<Vertex> neighbors;
-        for (auto it : edges) {
-            if (it.getSrc().getID() == id) {
-                neighbors.push_back(it.getDst());
-            } else if (it.getDst().getID() == id) {
-                neighbors.push_back(it.getSrc());
-            }
+        for (int i = 0; i < adj_matrix.size(); ++i) {
+            if (adj_matrix.at(id - 1).at(i) != 0)
+                neighbors.push_back(getVertex(i + 1));
         }
-        std::sort(neighbors.begin(), neighbors.end(), sortByLabelDes);
         return neighbors;
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
@@ -81,12 +114,18 @@ bool Graph::hasLoop()
     return false;
 }
 
+bool Graph::hasCircle()
+{
+    return false;
+}
+
 std::vector<Vertex> Graph::getVertices()
 {
     return vertices;
 }
 
-Edge Graph::getEdge(unsigned int src_id, unsigned int dst_id){
+Edge Graph::getEdge(unsigned int src_id, unsigned int dst_id)
+{
     // std::find(edges.begin(), edges.end(), );
     return edges[0];
 }
@@ -96,7 +135,8 @@ std::vector<Edge> Graph::getEdges()
     return edges;
 }
 
-void Graph::setEdges(std::vector<Edge> e){
+void Graph::setEdges(std::vector<Edge> e)
+{
     edges = e;
 }
 
@@ -126,6 +166,7 @@ Graph& Graph::operator+=(const Edge& e)
 
 Graph& Graph::operator=(const Graph& other)
 {
+    this->adj_matrix = other.adj_matrix;
     this->vertices = other.vertices;
     this->edges = other.edges;
 }
