@@ -6,9 +6,10 @@ Edge::Edge(const Vertex& src, const Vertex& dst)
     this->dst = dst;
 }
 
-Edge::Edge(unsigned int id1, unsigned int id2){
-    src = Vertex(id1);
-    dst = Vertex(id2);
+Edge::Edge(unsigned int src_id, unsigned int dst_id, int value){
+    src = Vertex(src_id);
+    dst = Vertex(dst_id);
+    this->value = value;
 }
 
 Edge::~Edge()

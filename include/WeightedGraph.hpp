@@ -5,6 +5,7 @@ class WeightedGraph : public Graph {
 public:
     WeightedGraph(int v_count, std::vector<std::pair<Edge, int>> e_w);
     WeightedGraph(Graph g, std::vector<std::pair<Edge, int>> weights);
+    WeightedGraph(std::vector<std::vector<int>> adj_matrix);
     virtual ~WeightedGraph();
 
     /*@param src_id     ID of the source vertex.

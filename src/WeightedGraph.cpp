@@ -9,13 +9,19 @@ WeightedGraph::WeightedGraph(Graph g, std::vector<std::pair<Edge, int>> weights)
     : Graph(g)
 {
 }
+
+WeightedGraph::WeightedGraph(std::vector<std::vector<int>> adj_matrix)
+    : Graph(adj_matrix)
+{
+}
+
 WeightedGraph::~WeightedGraph() {}
 
 void WeightedGraph::setWeight(unsigned int src_id, unsigned int dst_id, int weight)
 {
     if (weight < 0)
         throw std::invalid_argument("Invalid weight number. Must be greater than 0");
-    else{
+    else {
         auto temp = getEdge(src_id, dst_id);
     }
 }

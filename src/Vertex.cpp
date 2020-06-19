@@ -8,6 +8,12 @@ Vertex::Vertex(unsigned int id)
     this->value = 0;
 }
 
+Vertex::Vertex(unsigned int id, int value) 
+{
+    this->id = id;
+    this->value = value;
+}
+
 Vertex::~Vertex()
 {
 }
@@ -15,6 +21,16 @@ Vertex::~Vertex()
 int Vertex::getID()
 {
     return id;
+}
+
+int Vertex::getValue()
+{
+    return value;
+}
+
+void Vertex::setValue(int v)
+{
+    value = v;
 }
 
 bool Vertex::operator==(const Vertex& other)
@@ -25,6 +41,11 @@ bool Vertex::operator==(const Vertex& other)
 bool Vertex::operator!=(const Vertex& other)
 {
     return this != &other;
+}
+
+bool Vertex::operator<(const Vertex& other)
+{
+    return this->id < other.id;
 }
 
 std::ostream& operator<<(std::ostream& out, Vertex& e)

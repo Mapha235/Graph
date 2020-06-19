@@ -16,20 +16,20 @@ public:
     @param e vector of edges.*/
     Graph(int v_count, std::vector<std::pair<int, int>> e);
     Graph(int v_count, std::vector<Edge> e);
-    Graph(std::vector<std::vector<bool>> adj);
+    explicit Graph(std::vector<std::vector<int>> adj);
     virtual ~Graph();
     /*Removes duplicate vertices and edges.*/
     virtual void removeDup();
     virtual std::vector<Vertex> getNeighbors(int id);
     /*Add an edge to the Graph.*/
-    virtual void add(const std::pair<int, int>& v);
+    virtual void addEdge(Edge& v);
     /*Remove an edge from the Graph.*/
     virtual void remove(const std::pair<int, int>& v);
 
     /*Needs to be checked in order 
-    for the Handshaking Lemma to be valid.*/
+    for the Handshaking Lemma to be valid.
+    @return true if the graph has a loop.*/
     bool hasLoop();
-    bool hasCircle();
     Vertex getVertex(unsigned int id);
     std::vector<Vertex> getVertices();
 
@@ -37,16 +37,16 @@ public:
     virtual std::vector<Edge> getEdges();
     virtual void setEdges(std::vector<Edge> e);
 
+    void setWeight(int src_id, int dst_id, int weight);
+    int getWeight(int src_id, int dst_id);
+
     Graph& operator+=(const Graph& other);
     Graph& operator+=(const Vertex& v);
     Graph& operator+=(const Edge& e);
     Graph& operator=(const Graph& other);
 
 protected:
-    /*  In most cases I want to work with edges, 
-        which is why I save the adjacent matrix 
-        that provides O(1) complexitity on edge-operations.*/
-    std::vector<std::vector<bool>> adj_matrix;
+    std::vector<std::vector<int>> adj_matrix;
     std::vector<Vertex> vertices;
     std::vector<Edge> edges;
 };
