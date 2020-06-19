@@ -1,12 +1,5 @@
 #include "Graph.hpp"
 
-// Graph::Graph(unsigned int v, std::vector<Edge> e)
-// {
-//     for(int i = 0; i < v; ++i)
-//         vertices.insert(Vertex(i));
-//     edges = e;
-// }
-
 bool sortByLabelDes(Vertex v1, Vertex v2)
 {
     return v1.getID() < v2.getID();
@@ -144,6 +137,7 @@ void Graph::setEdges(std::vector<Edge> e)
 void Graph::setWeight(int src_id, int dst_id, int weight)
 {
     adj_matrix[src_id - 1][dst_id - 1] = weight;
+    adj_matrix[dst_id - 1][src_id - 1] = weight;
 }
 
 int Graph::getWeight(int src_id, int dst_id)
@@ -173,7 +167,7 @@ void Graph::addEdge(Edge& v)
     int max = (src_id < dst_id) ? dst_id : src_id;
 
     if (rows < max) {
-        for(auto it = adj_matrix.begin(); it != adj_matrix.end(); ++it)
+        for (auto it = adj_matrix.begin(); it != adj_matrix.end(); ++it)
             it->push_back(0);
         adj_matrix.push_back(std::vector<int>(max - adj_matrix.size(), 0));
         vertices.push_back(Vertex(vertices.size()));
@@ -182,11 +176,7 @@ void Graph::addEdge(Edge& v)
     edges.push_back(Edge(src_id, dst_id, v.value));
 }
 
-void Graph::remove(const std::pair<int, int>& v)
-{
-}
-
-Graph& Graph::operator+=(const Edge& e)
+void Graph::removeEdge(const int& src_id, const int& dst_id)
 {
 }
 
@@ -195,4 +185,9 @@ Graph& Graph::operator=(const Graph& other)
     this->adj_matrix = other.adj_matrix;
     this->vertices = other.vertices;
     this->edges = other.edges;
+}
+
+std::istream& operator>>(std::istream& in, Graph& graph)
+{
+    std::vector<std::vector<int>> file_adj;
 }

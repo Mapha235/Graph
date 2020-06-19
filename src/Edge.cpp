@@ -4,6 +4,7 @@ Edge::Edge(const Vertex& src, const Vertex& dst)
 {
     this->src = src;
     this->dst = dst;
+    this->value = 1;
 }
 
 Edge::Edge(unsigned int src_id, unsigned int dst_id, int value){

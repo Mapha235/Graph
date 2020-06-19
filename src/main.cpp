@@ -34,7 +34,7 @@ bool init(SDL_Window** window)
     if (window == NULL) {
         //Print error, if null
         std::std::cout << "Could not create window" << std::std::endl
-                  << SDL_GetError() << std::std::endl;
+                       << SDL_GetError() << std::std::endl;
         return 1;
     } else
         SDL_Log("Window Successful Generated");
@@ -88,10 +88,12 @@ int main(int argc, char* argv[])
 
 #ifdef BASE
 #include "Graph.hpp"
-#include "WeightedGraph.hpp"
-#include <bits/stdc++.h>
+
+#include <chrono>
 #include <deque>
+#include <fstream>
 #include <iostream>
+#include <tuple>
 
 #define INFTY ((unsigned)~0)
 
@@ -128,13 +130,6 @@ void printEdges(Graph& graph)
   indicating that there is not enough memory, available.*/
 Graph completeGraph(int v_count)
 {
-    // std::vector<std::pair<int, int>> edges;
-    // for (int i = 0; i < v_count; i++) {
-    //     for (int j = 0; j < v_count; j++) {
-    //         if (i < j)
-    //             edges.push_back(std::make_pair(i + 1, j + 1));
-    //     }
-    // }
     std::vector<std::vector<int>> adj(v_count, std::vector<int>(v_count, 1));
     for (int i = 0; i < v_count; ++i) {
         adj[i][i] = 0;
@@ -257,7 +252,6 @@ std::vector<std::vector<int>> dijkstra(Graph w_g, int start_id = 1)
     std::vector<bool> popped;
 
     std::vector<Vertex> vertices = w_g.getVertices();
-    //TODO. shallow copy instead of deep
 
     int infinity = std::numeric_limits<int>::max();
 
@@ -303,12 +297,12 @@ bool hasCircle(Graph g, int start_id = 1)
     //modified bfs
     while (!queue.empty()) {
         for (auto it : g.getNeighbors(queue.front())) {
-            if (!visited[it.getID() - 1]) {
+            if (visited[it.getID() - 1] && parent[queue.front() - 1] != it.getID()) {
+                return true;
+            } else if (!visited[it.getID() - 1]) {
                 queue.push_back(it.getID());
                 visited[it.getID() - 1] = true;
                 parent[it.getID() - 1] = queue.front();
-            } else if (visited[it.getID() - 1] && parent[queue.front() - 1] != it.getID()) {
-                return true;
             }
         }
         queue.pop_front();
@@ -316,10 +310,12 @@ bool hasCircle(Graph g, int start_id = 1)
     return false;
 }
 
+/*  @param w_g Input graph
+    @return corresponding minimum spanning tree
+*/
 Graph kruskal(Graph w_g)
 {
     std::vector<Vertex> r_node;
-    std::vector<bool> visited;
     std::deque<Edge> edges;
     std::vector<std::vector<int>> adj;
 
@@ -327,33 +323,51 @@ Graph kruskal(Graph w_g)
         std::vector<int> zeros(w_g.getVertices().size(), 0);
         adj.push_back(zeros);
     }
-    // std::cout << "rows: " << adj.size() << "columns: " << adj[0].size() << std::endl;;
 
-    Graph sub_tree(adj);
+    Graph min_span_tree(adj);
 
     for (auto edge : w_g.getEdges()) {
         edges.push_back(edge);
     }
 
-    std::sort(edges.begin(), edges.end(), [](const Edge lhs, const Edge rhs) {
-        return lhs.value < rhs.value;
-    });
-    // for (auto y : edges) {
-    // std::cout << y << ", Weight: " << y.value << std::endl;
-    // }
+    /*  Sort the edges by weight.
+        In case of a tie, sort the edges by their Source and Destination ID's*/
+    std::sort(edges.begin(), edges.end(), [](Edge& lhs, Edge& rhs) {
+        return lhs.value < rhs.value || 
+        (lhs.value == rhs.value && lhs.getSrc().getID() < rhs.getSrc().getID()) ||
+        (lhs.value == rhs.value && lhs.getSrc().getID() == rhs.getSrc().getID() && lhs.getDst().getID() < rhs.getDst().getID());
+    });    
 
-    for (auto edge : edges) {
-        std::cout << "Currently looking at Edge: " << edge << std::endl;
-        sub_tree.setWeight(edge.getSrc().getID(), edge.getDst().getID(), edge.value);
-        if (hasCircle(sub_tree)) {
-            sub_tree.setWeight(edge.getSrc().getID(), edge.getDst().getID(), 0);
-            std::cout << "Adding " << edge << " leads to a circle" << std::endl;
+    std::cout << "Step\tCurrent\t\tValid?" << std::endl;
+
+    std::string valid = "yes";
+    int step = 1;
+
+    while (!edges.empty()) {
+        auto edge = edges.begin();
+        int src_id = edge->getSrc().getID();
+        int dst_id = edge->getDst().getID();
+
+        min_span_tree.setWeight(src_id, dst_id, edge->value);
+        int min_id = edge->getSrc().getID() < edge->getDst().getID() ? edge->getSrc().getID() : edge->getDst().getID();
+        if (hasCircle(min_span_tree, min_id)) {
+            min_span_tree.setWeight(src_id, dst_id, 0);
+            valid = "no";
         } else
-            sub_tree.addEdge(edge);
+            min_span_tree.addEdge(*edge);
+
+        std::cout << step << ".\t" << *edge << "\t\t" << valid << std::endl;
+        valid = "yes";
+        edges.pop_front();
+        // cout << "Edges" << endl;
+        // printEdges(min_span_tree);
+        step++;
     }
-    std::cout << "Sub Tree edges: " << std::endl;
-    printEdges(sub_tree);
-    return sub_tree;
+
+    // std::cout << "Minimum Spanning Tree edges: " << std::endl;
+    // printEdges(min_span_tree);
+    cout << "Edge_size(): " << min_span_tree.getEdges().size() << std::endl;
+    return min_span_tree;
 }
 
 std::vector<Edge> xyRouting(Graph mesh, Vertex src, Vertex dst)
@@ -361,8 +375,52 @@ std::vector<Edge> xyRouting(Graph mesh, Vertex src, Vertex dst)
     return {};
 }
 
+Graph read_graph_from_file(std::string path)
+{
+
+    return Graph({});
+}
+
 int main(int argc, char** argv)
 {
+    int type;
+    int number;
+    Graph g({});
+
+    if (argc == 3) {
+        type = static_cast<int>(argv[1][0]);
+        number = std::stoi(argv[2]);
+
+        switch (type) {
+        case static_cast<int>('c'):
+            g = circleGraph(number);
+            break;
+        case static_cast<int>('k'):
+            g = completeGraph(number);
+            break;
+        case static_cast<int>('p'):
+            g = pathGraph(number);
+            break;
+        case static_cast<int>('s'):
+            g = starGraph(number);
+            break;
+        default:
+            break;
+        }
+    } else {
+        std::vector<std::vector<int>> dij = {
+            //a  b  c  d  e
+            { 0, 5, 1, 0, 0 }, //a
+            { 5, 0, 0, 1, 0 }, //b
+            { 1, 0, 0, 2, 4 }, //c
+            { 0, 1, 2, 0, 1 }, //d
+            { 0, 0, 4, 1, 0 } //e
+        };
+
+        g = read_graph_from_file("./data/graph.txt");
+        g = Graph(dij);
+    }
+
     pair<int, int> edge1(1, 2);
     pair<int, int> edge2(1, 3);
     pair<int, int> edge3(1, 4);
@@ -413,37 +471,33 @@ int main(int argc, char** argv)
         { 0, 0, 1, 1, 0 }
     };
 
-    std::vector<std::vector<int>> dij = {
-        //a  b  c  d  e
-        { 0, 5, 1, 0, 0 }, //a
-        { 5, 0, 0, 1, 0 }, //b
-        { 1, 0, 0, 2, 4 }, //c
-        { 0, 1, 2, 0, 1 }, //d
-        { 0, 0, 4, 1, 0 } //e
-    };
-
     Graph example(5, edges2);
     Graph complete = completeGraph(5);
     Graph circle = circleGraph(10);
     Graph tree(13, edges);
     Graph star = starGraph(6);
     Graph path = pathGraph(7);
-    WeightedGraph g(dij);
+    // Graph g(dij);
     Graph c(k5);
 
-    // for (auto it : breadth_first_search(tree, 1))
-    //     std::std::cout << it << ',';
+    // for (auto it : breadth_first_search(g, 1))
+    //     std::cout << it << ',';
 
     // std::cout << "\n\n";
 
     // for (auto it : breadth_first_search(complete, 1))
     //     std::std::cout << it << ',';
 
-    // std::std::cout << hasCircle(tree, 1) << std::endl;
-    // std::std::cout << hasCircle(circle, 1) << std::endl;
+    auto t1 = std::chrono::high_resolution_clock::now();
 
-    kruskal(complete);
-    std::cout << "\n\n";
+
+    kruskal(g);
+
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "\n";
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    std::cout << "Time in ms: "<< duration << endl;
     // printEdges(complete);
     // printEdges(complete);
     // std::cout << g.getWeight(1, 2) << std::endl;

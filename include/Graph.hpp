@@ -24,7 +24,7 @@ public:
     /*Add an edge to the Graph.*/
     virtual void addEdge(Edge& v);
     /*Remove an edge from the Graph.*/
-    virtual void remove(const std::pair<int, int>& v);
+    virtual void removeEdge(const int& src_id, const int& dst_id);
 
     /*Needs to be checked in order 
     for the Handshaking Lemma to be valid.
@@ -37,13 +37,11 @@ public:
     virtual std::vector<Edge> getEdges();
     virtual void setEdges(std::vector<Edge> e);
 
-    void setWeight(int src_id, int dst_id, int weight);
+    virtual void setWeight(int src_id, int dst_id, int weight);
     int getWeight(int src_id, int dst_id);
 
-    Graph& operator+=(const Graph& other);
-    Graph& operator+=(const Vertex& v);
-    Graph& operator+=(const Edge& e);
     Graph& operator=(const Graph& other);
+    friend std::istream& operator>>(std::istream& in, Graph& graph);
 
 protected:
     std::vector<std::vector<int>> adj_matrix;
