@@ -113,11 +113,6 @@ bool Graph::hasLoop()
     return false;
 }
 
-std::vector<Vertex> Graph::getVertices()
-{
-    return vertices;
-}
-
 Edge Graph::getEdge(unsigned int src_id, unsigned int dst_id)
 {
     // std::find(edges.begin(), edges.end(), );
@@ -155,6 +150,18 @@ Vertex Graph::getVertex(unsigned int id)
         throw std::out_of_range(msg);
     }
     return vertices.at(id - 1);
+}
+
+std::vector<Vertex> Graph::getVertices()
+{
+    return vertices;
+}
+
+void Graph::removeVertex(unsigned int id)
+{
+    // vertices.erase(std::remove(vertices.begin(), vertices.end(), getVertex(id)), vertices.end());
+    auto target_vertex = vertices.begin() + (id - 1);
+    vertices.erase(target_vertex);
 }
 
 void Graph::addEdge(Edge& v)

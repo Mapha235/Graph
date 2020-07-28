@@ -1,92 +1,3 @@
-#define BASE
-#ifdef SDL2
-#include "../include/common.h"
-
-typedef struct {
-    int x,
-        y;
-} Position;
-
-bool init(SDL_Window** window)
-{
-    //Error Checking/Initialisation
-    if (SDL_Init(SDL_INIT_NOPARACHUTE & SDL_INIT_EVERYTHING) != 0) {
-        SDL_Log("Unable to initialize SDL: %s\n", SDL_GetError());
-        return -1;
-    } else {
-        //Specify OpenGL Version (4.2)
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_Log("SDL Initialised");
-    }
-    // GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER);
-
-    *window = SDL_CreateWindow(
-        "Sudoku",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
-        640,
-        480,
-        SDL_WINDOW_OPENGL);
-
-    //Check that the window was succesfully created
-    if (window == NULL) {
-        //Print error, if null
-        std::std::cout << "Could not create window" << std::std::endl
-                       << SDL_GetError() << std::std::endl;
-        return 1;
-    } else
-        SDL_Log("Window Successful Generated");
-    return 0;
-}
-
-int main(int argc, char* argv[])
-{
-    //Create Window Instance
-    SDL_Window* window;
-    init(&window);
-
-    //Map OpenGL Context to Window
-    SDL_GLContext glContext = SDL_GL_CreateContext(window);
-
-    SDL_Surface* screenSurface = NULL;
-
-    //Render
-    SDL_Renderer* renderer = NULL;
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(renderer);
-    SDL_UpdateWindowSurface(window);
-
-    SDL_Surface* rect;
-
-    SDL_Event event;
-    bool running = 1;
-    while (running) {
-        if (SDL_PollEvent(&event)) {
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-                running = 0;
-            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_m) {
-                SDL_BlitSurface(rect, NULL, screenSurface, NULL);
-            }
-        }
-        //Swap Render Buffers
-        SDL_GL_SwapWindow(window);
-    }
-
-    //Free up resources
-    SDL_GL_DeleteContext(glContext);
-    SDL_DestroyWindow(window);
-
-    SDL_Quit();
-
-    return 0;
-}
-#endif
-
-#ifdef BASE
 #include "Graph.hpp"
 
 #include <chrono>
@@ -127,7 +38,7 @@ void printEdges(Graph& graph)
 }
 
 /*The program will throw a bad_alloc exception whenever v_count > 12
-  indicating that there is not enough memory, available.*/
+  indicating that there is not enough memory available.*/
 Graph completeGraph(int v_count)
 {
     std::vector<std::vector<int>> adj(v_count, std::vector<int>(v_count, 1));
@@ -167,11 +78,18 @@ Graph pathGraph(int e_count)
 
 Graph gridGraph(int rows, int cols)
 {
+    int v_count = rows * cols;
+    std::vector<std::pair<int, int>> edges;
+
+    for (int i = 0; i < v_count - 1; ++i) {
+    }
     return Graph({});
 }
 
-std::vector<int> breadth_first_search(Graph g, int start_id = 1)
+std::vector<int> breadth_first_search(Graph& g, int start_id = 1)
 {
+    std::cout << "BFS:" << std::endl;
+
     std::vector<int> search_sequence;
     std::deque<int> queue;
     queue.push_back(start_id);
@@ -205,8 +123,10 @@ std::vector<int> breadth_first_search(Graph g, int start_id = 1)
     return search_sequence;
 }
 
-std::vector<int> depth_first_search(Graph g, int start_id = 1)
+std::vector<int> depth_first_search(Graph& g, int start_id = 1)
 {
+    std::cout << "DFS:" << std::endl;
+
     std::vector<int> search_sequence_v;
     std::vector<int> stack;
     std::vector<bool> visited;
@@ -245,11 +165,18 @@ std::vector<int> depth_first_search(Graph g, int start_id = 1)
     return search_sequence_v;
 }
 
-std::vector<std::vector<int>> dijkstra(Graph w_g, int start_id = 1)
+/*  @param  w_g weighted graph
+    @param  start_id     start Vertex
+    @param  dst_id       destination Vertex,
+                        dst_id == 0 means no destination specified
+    @return shortest_path
+*/
+std::vector<int> dijkstra(Graph& w_g, int start_id = 1, int dst_id = 0)
 {
+    std::cout << "Dijkstra:" << std::endl;
     std::vector<std::vector<int>> table;
-    std::vector<Vertex> vorg; // parent vertex
-    std::vector<bool> popped;
+    std::vector<int> path;
+    std::vector<bool> visited;
 
     std::vector<Vertex> vertices = w_g.getVertices();
 
@@ -257,7 +184,7 @@ std::vector<std::vector<int>> dijkstra(Graph w_g, int start_id = 1)
 
     for (auto& it : vertices) {
         it.setValue(infinity);
-        vorg.push_back(it); // initially all vertices parent's are themselves
+        visited.push_back(false);
     }
 
     // std::vector<Vertex>::iterator current = vertices.begin() + (start_id - 1);
@@ -271,17 +198,19 @@ std::vector<std::vector<int>> dijkstra(Graph w_g, int start_id = 1)
         std::cout << "ID: " << current.getID() << std::endl;
         std::cout << "Value: " << current.getValue() << std::endl;
         vertices.erase(min);
+        visited[current.getID() - 1] = true;
         for (auto y : w_g.getNeighbors(current.getID())) {
-            if (current.getValue() + w_g.getWeight(current.getID(), y.getID()) < y.getValue())
-                y.setValue(current.getValue() + w_g.getWeight(current.getID(), y.getID()));
+            if (current.getValue() + w_g.getWeight(current.getID(), y.getID()) < y.getValue() && visited[y.getID() - 1]) {
+                vertices.at(0).setValue(current.getValue() + w_g.getWeight(current.getID(), y.getID()));
+            }
         }
     }
     // vertices.erase(std::remove(vertices.begin(), vertices.end(), w_g.getVertex(start_id)), vertices.end());
 
-    return table;
+    return path;
 }
 
-bool hasCircle(Graph g, int start_id = 1)
+bool hasCircle(Graph& g, int start_id = 1)
 {
     std::vector<int> parent;
     std::deque<int> queue;
@@ -313,15 +242,18 @@ bool hasCircle(Graph g, int start_id = 1)
 /*  @param w_g Input graph
     @return corresponding minimum spanning tree
 */
-Graph kruskal(Graph w_g)
+Graph kruskal(Graph& w_g)
 {
+    std::cout << "Kruskal:" << std::endl;
     std::vector<Vertex> r_node;
     std::deque<Edge> edges;
+    std::vector<bool> visited;
     std::vector<std::vector<int>> adj;
 
     for (int i = 0; i < w_g.getVertices().size(); ++i) {
         std::vector<int> zeros(w_g.getVertices().size(), 0);
         adj.push_back(zeros);
+        visited.push_back(false);
     }
 
     Graph min_span_tree(adj);
@@ -333,12 +265,10 @@ Graph kruskal(Graph w_g)
     /*  Sort the edges by weight.
         In case of a tie, sort the edges by their Source and Destination ID's*/
     std::sort(edges.begin(), edges.end(), [](Edge& lhs, Edge& rhs) {
-        return lhs.value < rhs.value || 
-        (lhs.value == rhs.value && lhs.getSrc().getID() < rhs.getSrc().getID()) ||
-        (lhs.value == rhs.value && lhs.getSrc().getID() == rhs.getSrc().getID() && lhs.getDst().getID() < rhs.getDst().getID());
-    });    
+        return lhs.value < rhs.value || (lhs.value == rhs.value && lhs.getSrc().getID() < rhs.getSrc().getID()) || (lhs.value == rhs.value && lhs.getSrc().getID() == rhs.getSrc().getID() && lhs.getDst().getID() < rhs.getDst().getID());
+    });
 
-    std::cout << "Step\tCurrent\t\tValid?" << std::endl;
+    std::cout << "Step\tCurrent\t\tWeight\t\tValid?" << std::endl;
 
     std::string valid = "yes";
     int step = 1;
@@ -356,7 +286,7 @@ Graph kruskal(Graph w_g)
         } else
             min_span_tree.addEdge(*edge);
 
-        std::cout << step << ".\t" << *edge << "\t\t" << valid << std::endl;
+        std::cout << step << ".\t" << *edge << "\t\t" << edge->value << "\t\t" << valid << std::endl;
         valid = "yes";
         edges.pop_front();
         // cout << "Edges" << endl;
@@ -366,7 +296,7 @@ Graph kruskal(Graph w_g)
 
     // std::cout << "Minimum Spanning Tree edges: " << std::endl;
     // printEdges(min_span_tree);
-    cout << "Edge_size(): " << min_span_tree.getEdges().size() << std::endl;
+    cout << "Edge-size: " << min_span_tree.getEdges().size() << std::endl;
     return min_span_tree;
 }
 
@@ -375,46 +305,94 @@ std::vector<Edge> xyRouting(Graph mesh, Vertex src, Vertex dst)
     return {};
 }
 
+
+void ford_fulkerson(Graph& g){
+
+}
+
 Graph read_graph_from_file(std::string path)
 {
 
     return Graph({});
 }
 
+std::vector<int> permutations(Graph g)
+{
+}
+
+void tsp_mst_dfs(Graph g)
+{
+    Graph min_span_tree = kruskal(g);
+    auto search_sequence = depth_first_search(min_span_tree);
+
+}
+
+std::vector<int> tsp_nearest_neighbor(Graph g, int start_id = 1)
+{
+    std::vector<int> sequence;
+    std::vector<bool> visited(g.getVertices().size(), false);
+
+    // sequence.push_back(start_id);
+    visited[start_id - 1] = true;
+
+    while (!sequence.empty()) {
+        for (auto y : g.getNeighbors(start_id)) { }
+    }
+}
+
+void tsp_backtracking(Graph g)
+{
+    
+}
+
+bool sat()
+{
+}
+
+//TODO
+template <typename ReturnType, typename... Args>
+void clock(ReturnType*(algorithm)(Args... args))
+{
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    // *(algorithm)(args);
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "\n";
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    double milli = static_cast<double>(duration) / 1000.0;
+    double seconds = milli / 1000.0;
+    std::cout << "Finished in: " << seconds << "s" << endl;
+}
+
+/*  c=99  1
+    g=103 5
+    k=107 2
+    p=112 0
+    s=115 3*/
+Graph (*specialGraph[])(int) = { pathGraph, circleGraph, completeGraph, starGraph };
+
 int main(int argc, char** argv)
 {
-    int type;
+    int hash;
     int number;
     Graph g({});
 
     if (argc == 3) {
-        type = static_cast<int>(argv[1][0]);
+        hash = static_cast<int>(argv[1][0]) % 7;
         number = std::stoi(argv[2]);
 
-        switch (type) {
-        case static_cast<int>('c'):
-            g = circleGraph(number);
-            break;
-        case static_cast<int>('k'):
-            g = completeGraph(number);
-            break;
-        case static_cast<int>('p'):
-            g = pathGraph(number);
-            break;
-        case static_cast<int>('s'):
-            g = starGraph(number);
-            break;
-        default:
-            break;
-        }
+        g = specialGraph[hash](number);
     } else {
         std::vector<std::vector<int>> dij = {
             //a  b  c  d  e
-            { 0, 5, 1, 0, 0 }, //a
-            { 5, 0, 0, 1, 0 }, //b
-            { 1, 0, 0, 2, 4 }, //c
-            { 0, 1, 2, 0, 1 }, //d
-            { 0, 0, 4, 1, 0 } //e
+            { 0, 5, 2, 0, 1, 1 }, //a
+            { 5, 0, 0, 2, 0, 0 }, //b
+            { 2, 0, 0, 2, 4, 0 }, //c
+            { 0, 2, 2, 0, 3, 0 }, //d
+            { 1, 0, 4, 3, 0, 1 }, //e
+            { 1, 0, 4, 0, 1, 0 }
         };
 
         g = read_graph_from_file("./data/graph.txt");
@@ -490,14 +468,17 @@ int main(int argc, char** argv)
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-
-    kruskal(g);
-
+    // depth_first_search(g);
+    tsp_mst_dfs(g);
 
     auto t2 = std::chrono::high_resolution_clock::now();
     std::cout << "\n";
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-    std::cout << "Time in ms: "<< duration << endl;
+    double milli = static_cast<double>(duration) / 1000.0;
+    double seconds = milli / 1000.0;
+    std::cout << "Time: " << seconds << " s" << endl;
+
+    // std::cout << "Time in " << static_cast<char>(230) << "s: " << duration << endl;
     // printEdges(complete);
     // printEdges(complete);
     // std::cout << g.getWeight(1, 2) << std::endl;

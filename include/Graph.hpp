@@ -25,6 +25,9 @@ public:
     virtual void addEdge(Edge& v);
     /*Remove an edge from the Graph.*/
     virtual void removeEdge(const int& src_id, const int& dst_id);
+    Edge getEdge(unsigned int src_id, unsigned int dst_id);
+    virtual std::vector<Edge> getEdges();
+    virtual void setEdges(std::vector<Edge> e);
 
     /*Needs to be checked in order 
     for the Handshaking Lemma to be valid.
@@ -32,10 +35,8 @@ public:
     bool hasLoop();
     Vertex getVertex(unsigned int id);
     std::vector<Vertex> getVertices();
+    void removeVertex(unsigned int id);
 
-    Edge getEdge(unsigned int src_id, unsigned int dst_id);
-    virtual std::vector<Edge> getEdges();
-    virtual void setEdges(std::vector<Edge> e);
 
     virtual void setWeight(int src_id, int dst_id, int weight);
     int getWeight(int src_id, int dst_id);
